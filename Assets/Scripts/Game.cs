@@ -5,24 +5,37 @@ using UnityEngine;
 
 public abstract class Game : MonoBehaviour
 {
-    protected bool isPlaying = false;
-
     public event Action OnScore;
+    public GAME_TITLE Title { get; set; }
 
+    protected bool isInitialized = false;
+    protected bool isPlaying = false;
     private Camera myCamera;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         myCamera = GetComponent<Camera>();
     }
 
-    public abstract void Initialize();
+    public virtual void Initialize() 
+    {
+        if (isInitialized)
+            return;
+
+        GameManager.instance.OnGameover += GameOver;
+    }
     public abstract void Pause();
     public abstract void Resume();
+
+    public void SwapGame()
+    {
+        GameManager.instance.PlayNextScene();
+    }
 
     public virtual void GameOver()
     {
         GameManager.instance.GameOver();
+        Pause();
     }
 
     public Camera GetCamera()
@@ -30,7 +43,7 @@ public abstract class Game : MonoBehaviour
         return myCamera;
     }
 
-    protected void ScoreUp()
+    public void ScoreUp()
     {
         OnScore?.Invoke();
     }

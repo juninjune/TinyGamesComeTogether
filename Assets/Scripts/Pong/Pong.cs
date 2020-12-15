@@ -4,19 +4,26 @@ using UnityEngine;
 
 public class Pong : Game
 {
+    protected override void Awake()
+    {
+        base.Awake();
+
+        Title = GAME_TITLE.PONG;
+    }
+
     public override void Initialize()
     {
-        throw new System.NotImplementedException();
+        
     }
 
     public override void Pause()
     {
-        throw new System.NotImplementedException();
+
     }
 
     public override void Resume()
     {
-        throw new System.NotImplementedException();
+
     }
 
     public override void GameOver()

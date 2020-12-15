@@ -16,9 +16,9 @@ public class Tile : MonoBehaviour
     TILE_STATE body = TILE_STATE.BODY;
     TILE_STATE score = TILE_STATE.SCORE;
 
-    Color Black = Color.black;
-    Color White = Color.white;
-    Color Red = Color.red;
+    Color c_empty = Color.black;
+    Color c_body = Color.white;
+    Color c_score = Color.red;
 
     public void Start()
     {
@@ -33,15 +33,15 @@ public class Tile : MonoBehaviour
         switch (state)
         {
             case TILE_STATE.EMPTY:
-                myRenderer.material.color = Black;
+                myRenderer.material.color = c_empty;
                 break;
 
             case TILE_STATE.BODY:
-                myRenderer.material.color = White;
+                myRenderer.material.color = c_body;
                 break;
 
             case TILE_STATE.SCORE:
-                myRenderer.material.color = Red;
+                myRenderer.material.color = c_score;
                 break;
 
             default:

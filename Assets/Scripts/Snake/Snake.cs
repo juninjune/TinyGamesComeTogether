@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class Snake : Game
 {
-    private void Start()
+
+
+    protected override void Awake()
     {
-        Initialize();
+        base.Awake();
+
+        Title = GAME_TITLE.SNAKE;
     }
 
     private void Update()
@@ -22,30 +26,34 @@ public class Snake : Game
 
     public override void Initialize()
     {
+        base.Initialize();
         StartCoroutine(InitializeCoroutine());
     }
 
     IEnumerator InitializeCoroutine()
     {
-        yield return null;
-
         InitializeMap();
-
         yield return null;
-
         InitializePlayer();
         PutScorePoint();
 
         timeCoroutine = TimeGo();
         StartCoroutine(timeCoroutine);
 
+        isInitialized = true;
         isPlaying = true;
     }
 
     public override void Pause()
     {
+        StartCoroutine(PauseCoroutine());
+    }
+
+    IEnumerator PauseCoroutine()
+    {
+        yield return null;
         if (!isPlaying)
-            return;
+            yield break;
 
         StopCoroutine(timeCoroutine);
         isPlaying = false;
@@ -53,8 +61,19 @@ public class Snake : Game
 
     public override void Resume()
     {
+        StartCoroutine(ResumeCoroutine());
+    }
+
+    IEnumerator ResumeCoroutine()
+    {
+        yield return null;
+        yield return null;
+
         if (isPlaying)
-            return;
+            yield break;
+
+        if (!isInitialized)
+            yield break;
 
         timeCoroutine = TimeGo();
         StartCoroutine(timeCoroutine);
@@ -73,12 +92,16 @@ public class Snake : Game
     private Tile[][] map;
     [SerializeField]
     private GameObject tilePrefab;
+    private GameObject hierarchyFolder;
 
     const int MapSizeX = 11;
     const int MapSizeY = 11;
 
     void InitializeMap()
     {
+        hierarchyFolder = new GameObject("tile folder");
+        hierarchyFolder.transform.parent = transform;
+
         map = new Tile[MapSizeX][];
         for (int i = 0; i < MapSizeX; i++)
         {
@@ -87,6 +110,7 @@ public class Snake : Game
             {
                 map[i][j] = Instantiate(tilePrefab, new Vector3(i - 5, j - 5), Quaternion.identity).GetComponent<Tile>();
                 map[i][j].Pos = new Vector2Int(i, j);
+                map[i][j].transform.parent = hierarchyFolder.transform;
             }
         }
     }
@@ -110,11 +134,25 @@ public class Snake : Game
         return tile;
     }
 
-    Tile GetTile(Vector2Int _pos)
+    Tile GetTile_OrNull(Vector2Int _pos)
     {
+        if (!CheckOutOfIndex(_pos))
+            return null;
+
         return map[_pos.x][_pos.y];
     }
 
+    bool CheckOutOfIndex(Vector2Int _input)
+    {
+        if (_input.x < 0 || _input.x >= MapSizeX)
+            return false;
+
+
+        if (_input.y < 0 || _input.y >= MapSizeY)
+            return false;
+
+        return true;
+    }
     bool CheckOutOfIndex(Vector2Int _input, out Tile target)
     {
         if (_input.x < 0 || _input.x >= MapSizeX)
@@ -129,7 +167,7 @@ public class Snake : Game
             return false;
         }
 
-        target = GetTile(_input);
+        target = GetTile_OrNull(_input);
         return true;
     }
 
@@ -162,10 +200,15 @@ public class Snake : Game
 
     void CheckInput()
     {
-        int input = (int)Input.GetAxisRaw("Horizontal");
+        if(Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            int input = (int)Input.GetAxisRaw("Horizontal");
 
-        if(input != 0)
+            if (input == 0)
+                return;
+
             nextDirection = new Vector2Int(currentDirection.y * input, -currentDirection.x * input);
+        }
     }
 
     void TryMove()
