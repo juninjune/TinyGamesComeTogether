@@ -16,7 +16,7 @@ public class Platform : MonoBehaviour
         transform.eulerAngles = origin;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (isPlaying)
         {
