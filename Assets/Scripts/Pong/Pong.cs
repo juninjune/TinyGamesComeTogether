@@ -16,9 +16,14 @@ public class Pong : Game
         
     }
 
+    public override void StartGame()
+    {
+        throw new System.NotImplementedException();
+    }
+
     public override void Pause()
     {
-
+        base.Pause();
     }
 
     public override void Resume()

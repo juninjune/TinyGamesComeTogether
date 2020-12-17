@@ -8,7 +8,7 @@ public class PPR_Map : MonoBehaviour
 
     float speed_save = 0.0f;
 
-    private void Start()
+    public void Initialize()
     {
         rigid = GetComponent<Rigidbody2D>();
     }
@@ -20,17 +20,18 @@ public class PPR_Map : MonoBehaviour
 
     public void Pause()
     {
-
+        Save();
     }
 
     public void Resume()
     {
-
+        Load();
     }
 
     void Save()
     {
         speed_save = rigid.velocity.x;
+        rigid.velocity = Vector2.zero;
     }
 
     void Load()

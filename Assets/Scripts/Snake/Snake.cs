@@ -16,12 +16,6 @@ public class Snake : Game
     private void Update()
     {
         CheckInput();
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-            Pause();
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            Resume();
     }
 
     public override void Initialize()
@@ -38,42 +32,40 @@ public class Snake : Game
         PutScorePoint();
 
         timeCoroutine = TimeGo();
-        StartCoroutine(timeCoroutine);
 
         isInitialized = true;
+        IsStarted = false;
+    }
+
+    public override void StartGame()
+    {
         isPlaying = true;
+
+        StartCoroutine(timeCoroutine);
+
+        IsStarted = true;
+
     }
 
     public override void Pause()
     {
-        StartCoroutine(PauseCoroutine());
-    }
+        base.Pause();
 
-    IEnumerator PauseCoroutine()
-    {
-        yield return null;
         if (!isPlaying)
-            yield break;
+            return;
 
         StopCoroutine(timeCoroutine);
         isPlaying = false;
     }
 
+
     public override void Resume()
     {
-        StartCoroutine(ResumeCoroutine());
-    }
-
-    IEnumerator ResumeCoroutine()
-    {
-        yield return null;
-        yield return null;
-
         if (isPlaying)
-            yield break;
+            return;
 
         if (!isInitialized)
-            yield break;
+            return;
 
         timeCoroutine = TimeGo();
         StartCoroutine(timeCoroutine);
@@ -180,6 +172,7 @@ public class Snake : Game
     private Vector2Int currentDirection;
     private Vector2Int nextDirection;
     private Tile scorePoint;
+    private Tile triggerPoint;
 
     Vector2Int UP = new Vector2Int(0, 1);
 
@@ -192,10 +185,26 @@ public class Snake : Game
         nextDirection = currentDirection;
     }
 
+    const int UpLimitOfTriggerInterval = 8;
+
+    int triggerInterval;
     void PutScorePoint()
     {
+        if(Random.value < 0.2f || triggerInterval++ >= UpLimitOfTriggerInterval)
+        {
+            PutTriggerPoint();
+            triggerInterval = 0;
+            return;
+        }
+
         scorePoint = GetRandomEmptyTile();
         scorePoint.SetTileState(score);
+    }
+
+    void PutTriggerPoint()
+    {
+        triggerPoint = GetRandomEmptyTile();
+        triggerPoint.SetTileState(TILE_STATE.TRIGGER);
     }
 
     void CheckInput()
@@ -228,6 +237,16 @@ public class Snake : Game
 
         currentDirection = nextDirection;
 
+        if(head == triggerPoint)
+        {
+            triggerPoint = null;
+
+            ScoreUp();
+            PutScorePoint();
+            PlayNextScene();
+            return;
+        }
+
         if(head == scorePoint)
         {
             ScoreUp();
@@ -242,7 +261,7 @@ public class Snake : Game
 
     #region Time
 
-    float timeStep = 0.5f;
+    float timeStep = 0.7f;
 
     public void SetTimeStep(float _timeStep)
     {
@@ -253,6 +272,8 @@ public class Snake : Game
 
     IEnumerator TimeGo()
     {
+        yield return new WaitForSeconds(0.5f);
+
         while (true)
         {
             yield return new WaitForSeconds(timeStep);

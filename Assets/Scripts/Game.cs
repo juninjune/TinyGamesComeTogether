@@ -9,6 +9,7 @@ public abstract class Game : MonoBehaviour
     public GAME_TITLE Title { get; set; }
 
     protected bool isInitialized = false;
+    public bool IsStarted { get; set; }
     protected bool isPlaying = false;
     private Camera myCamera;
 
@@ -24,10 +25,17 @@ public abstract class Game : MonoBehaviour
 
         GameManager.instance.OnGameover += GameOver;
     }
-    public abstract void Pause();
+
+    public abstract void StartGame();
+
+    public virtual void Pause()
+    {
+        if (!IsStarted)
+            return;
+    }
     public abstract void Resume();
 
-    public void SwapGame()
+    public void PlayNextScene()
     {
         GameManager.instance.PlayNextScene();
     }

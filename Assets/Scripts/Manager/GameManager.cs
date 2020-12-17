@@ -49,13 +49,15 @@ public class GameManager : MonoBehaviour
     public Dictionary<GAME_TITLE, Game> gameDic = new Dictionary<GAME_TITLE, Game>();
 
     private LayoutController layoutController;
+    private UIManager ui;
 
     public static GameManager instance;
 
     public Scene[] scenario;
     private int currentSceneIndex = 0;
 
-    GAME_TITLE Pong = GAME_TITLE.PONG;
+
+    //GAME_TITLE Pong = GAME_TITLE.PONG;
     GAME_TITLE Ppr = GAME_TITLE.PPR;
     GAME_TITLE Siso = GAME_TITLE.SISO;
     GAME_TITLE Snake = GAME_TITLE.SNAKE;
@@ -71,13 +73,10 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         layoutController = GetComponent<LayoutController>();
+        ui = FindObjectOfType<UIManager>();
 
         InitializeGame();
         layoutController.Initialize();
-
-        PlayNextScene();
-
-        isPlaying = true;
     }
 
     private void Update()
@@ -86,11 +85,30 @@ public class GameManager : MonoBehaviour
             Restart();
     }
 
+    public void StartGame()
+    {
+        ui.SetTitleScreenOff();
+
+        PlayNextScene();
+
+        isPlaying = true;
+    }
+
     public void PlayNextScene()
     {
+        if (currentSceneIndex >= scenario.Length)
+        {
+            SetRandomGames();
+            return;
+        }
+
         scenario[currentSceneIndex++].PlayScene();
     }
 
+    public int GetScore()
+    {
+        return score;
+    }
 
     void InitializeGame()
     {
@@ -100,6 +118,7 @@ public class GameManager : MonoBehaviour
         {
             game.Initialize();
         }
+        PauseAllGames();
     }
 
     void InitializeDictionary()
@@ -120,11 +139,56 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void SetRandomGames()
+    {
+        if(UnityEngine.Random.value < 0.5f) // 한 개 실행
+        {
+            int _case = UnityEngine.Random.Range(0, 3);
+
+            switch (_case)
+            {
+                case 0:
+                    SetFeaturedGames(Ppr);
+                    break;
+                case 1:
+                    SetFeaturedGames(Snake);
+                    break;
+                case 2:
+                    SetFeaturedGames(Siso);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else // 두 개 실행
+        {
+            int _case = UnityEngine.Random.Range(0, 3);
+
+            switch (_case)
+            {
+                case 0:
+                    SetFeaturedGames(Ppr, Snake);
+                    break;
+                case 1:
+                    SetFeaturedGames(Snake, Siso);
+                    break;
+                case 2:
+                    SetFeaturedGames(Siso, Ppr);
+                    break;
+                default:
+                    break;
+            }
+        }            
+    }
+
     public void SetFeaturedGames(GAME_TITLE _name)
     {
         PauseAllGames();
 
-        gameDic[_name].Resume();
+        if (gameDic[_name].IsStarted)
+            gameDic[_name].Resume();
+        else
+            gameDic[_name].StartGame();
 
         layoutController.SetFeaturedGames(_name);
     }
@@ -133,8 +197,15 @@ public class GameManager : MonoBehaviour
     {
         PauseAllGames();
 
-        gameDic[_name].Resume();
-        gameDic[_name2].Resume();
+        if (gameDic[_name].IsStarted)
+            gameDic[_name].Resume();
+        else
+            gameDic[_name].StartGame();
+
+        if (gameDic[_name2].IsStarted)
+            gameDic[_name2].Resume();
+        else
+            gameDic[_name2].StartGame();
 
         layoutController.SetFeaturedGames(_name, _name2);
     }
@@ -162,7 +233,7 @@ public class GameManager : MonoBehaviour
     private void ScoreUp()
     {
         score++;
-        print("점수를 얻었습니다. 현재 점수는 " + score + "점 입니다.");
+        ui.UpdateScore();
     }
 
     public void GameOver()
@@ -172,10 +243,15 @@ public class GameManager : MonoBehaviour
 
         isPlaying = false;
         OnGameover.Invoke();
-        print("게임 오버입니다.");
+
+        int previousBestScore = PlayerPrefs.GetInt("bestScore");
+        if (previousBestScore < score)
+            PlayerPrefs.SetInt("bestScore", score);
+
+        ui.SetDeadScreenOn();
     }
 
-    private void Restart()
+    public void Restart()
     {
         SceneManager.LoadScene(0);
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TILE_STATE { EMPTY, BODY, SCORE }
+public enum TILE_STATE { EMPTY, BODY, SCORE, TRIGGER }
 
 public class Tile : MonoBehaviour
 {
@@ -15,10 +15,12 @@ public class Tile : MonoBehaviour
     TILE_STATE empty = TILE_STATE.EMPTY;
     TILE_STATE body = TILE_STATE.BODY;
     TILE_STATE score = TILE_STATE.SCORE;
+    TILE_STATE trigger = TILE_STATE.TRIGGER;
 
     Color c_empty = Color.black;
     Color c_body = Color.white;
     Color c_score = Color.red;
+    Color c_trigger = Color.green;
 
     public void Start()
     {
@@ -42,6 +44,10 @@ public class Tile : MonoBehaviour
 
             case TILE_STATE.SCORE:
                 myRenderer.material.color = c_score;
+                break;
+
+            case TILE_STATE.TRIGGER:
+                myRenderer.material.color = c_trigger;
                 break;
 
             default:

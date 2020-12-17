@@ -29,18 +29,16 @@ public class LayoutController : MonoBehaviour
     GAME_TITLE Siso = GAME_TITLE.SISO;
     GAME_TITLE Ppr = GAME_TITLE.PPR;
 
-
-
     public void Initialize()
     {
         cameras = new List<Camera>();
 
-        pongCam = GameManager.instance.gameDic[Pong].GetCamera();
+        //pongCam = GameManager.instance.gameDic[Pong].GetCamera();
         snakeCam = GameManager.instance.gameDic[Snake].GetCamera();
         sisoCam = GameManager.instance.gameDic[Siso].GetCamera();
         pPRCam = GameManager.instance.gameDic[Ppr].GetCamera();
 
-        cameras.Add(pongCam);
+        //cameras.Add(pongCam);
         cameras.Add(snakeCam);
         cameras.Add(sisoCam);
         cameras.Add(pPRCam);

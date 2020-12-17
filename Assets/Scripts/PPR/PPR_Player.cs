@@ -12,6 +12,17 @@ public class PPR_Player : MonoBehaviour
     public void Initialize()
     {
         playerAnimator = GetComponent<Animator>();
+        PlayIdleClip();
+    }
+
+    public void Pause()
+    {
+        playerAnimator.speed = 0.0f;
+    }
+
+    public void Resume()
+    {
+
     }
 
     public void PlayRunClip()
@@ -25,9 +36,6 @@ public class PPR_Player : MonoBehaviour
 
     public void PlayIdleClip()
     {
-        if (!isRun)
-            return;
-
         playerAnimator.Play("WoodCutter_idle");
         playerAnimator.speed = 0.33f;
         isRun = false;

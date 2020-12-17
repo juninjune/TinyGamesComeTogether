@@ -10,9 +10,11 @@ public class PPR_UI : MonoBehaviour
 
     private PPR ppr;
 
+
+
     private void Start()
     {
-        ppr = GetComponent<PPR>();
+        ppr = GetComponentInParent<PPR>();
 
         DisableAllUI();
     }
@@ -39,7 +41,9 @@ public class PPR_UI : MonoBehaviour
 
     IEnumerator CountDownCoroutine()
     {
-        yield return new WaitForSeconds(2f);
+        yield return null;
+        ppr.StopRun();
+        yield return new WaitForSeconds(1f);
         ShowUI(0);
         yield return new WaitForSeconds(1f);
         ShowUI(1);
@@ -50,6 +54,5 @@ public class PPR_UI : MonoBehaviour
         ppr.StartRun();
         yield return new WaitForSeconds(2f);
         DisableAllUI();
-
     }
 }

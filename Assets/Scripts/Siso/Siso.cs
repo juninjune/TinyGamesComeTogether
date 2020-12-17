@@ -11,6 +11,8 @@ public class Siso : Game
     [SerializeField]
     private GameObject scorePrefab;
     [SerializeField]
+    private GameObject triggerScorePrefab;
+    [SerializeField]
     private GameObject deadZonePrefab;
 
     private Ball myBall;
@@ -19,6 +21,7 @@ public class Siso : Game
     [SerializeField]
     private Vector2[] scorePositions;
     private List<Siso_score> scores = new List<Siso_score>();
+    private List<GameObject> triggers = new List<GameObject>();
 
     protected override void Awake()
     {
@@ -27,17 +30,14 @@ public class Siso : Game
         Title = GAME_TITLE.SISO;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            Pause();
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            Resume();
-    }
-    
     public void SpawnScore()
     {
+        if(Random.value < 0.2f)
+        {
+            SpawnTrigger();
+            return;
+        }
+
         Siso_score score;
 
         do
@@ -47,6 +47,19 @@ public class Siso : Game
         } while (score.GetIsActivated());
 
         score.Enable();
+    }
+
+    void SpawnTrigger()
+    {
+        GameObject trigger;
+
+        do
+        {
+            int index = Random.Range(0, triggers.Count);
+            trigger = triggers[index];
+        } while (trigger.activeSelf);
+
+        trigger.SetActive(true);
     }
 
     public override void Initialize()
@@ -59,14 +72,21 @@ public class Siso : Game
         myBall.transform.parent = transform;
         myPlatform.transform.parent = transform;
 
-
-
         InitializeScores();
+        InitializeTriggers();
 
         SpawnScore();
 
         isInitialized = true;
-        isPlaying = true;
+        IsStarted = false;
+    }
+
+    public override void StartGame()
+    {
+        myBall.Resume();
+        myPlatform.Resume();
+
+        IsStarted = true;
     }
 
     private void InitializeScores()
@@ -79,10 +99,20 @@ public class Siso : Game
         }
     }
 
+    private void InitializeTriggers()
+    {
+        for (int i = 0; i < scorePositions.Length; i++)
+        {
+            GameObject trigger = Instantiate(triggerScorePrefab, scorePositions[i], Quaternion.identity);
+            trigger.transform.parent = transform;
+            triggers.Add(trigger);
+            trigger.SetActive(false);
+        }
+    }
+
     public override void Pause()
     {
-        if (!isInitialized || !isPlaying)
-            return;
+        base.Pause();
 
         myBall.Pause();
         myPlatform.Pause();
@@ -92,9 +122,6 @@ public class Siso : Game
 
     public override void Resume()
     {
-        if (!isInitialized || isPlaying)
-            return;
-
         myBall.Resume();
         myPlatform.Resume();
 

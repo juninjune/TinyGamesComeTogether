@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class PPR : Game
 {
-    bool isInGame = false;
-    
+    bool isRunning = false;
+
+    [SerializeField]
+    GameObject mapPrefab;
     [SerializeField]
     GameObject comRunnerPrefab;
     [SerializeField]
@@ -28,12 +30,13 @@ public class PPR : Game
 
     private void Update()
     {
-        timeInterval += Time.deltaTime;
+        if (!isRunning)
+            return;
 
+        UpdateTimeInterval();
         TryRun();
         UpdateClipSpeed();
         CheckPlayerArrive();
-
     }
 
     public override void Initialize()
@@ -41,40 +44,78 @@ public class PPR : Game
         base.Initialize();
 
         player = Instantiate(playerRunnerPrefab).GetComponent<PPR_Player>();
-        map = FindObjectOfType<PPR_Map>();
-        ui = GetComponent<PPR_UI>();
+        player.transform.parent = transform;
 
+        ui = Instantiate(mapPrefab).GetComponent<PPR_UI>();
+        ui.GetComponent<RectTransform>().SetParent(transform);
+
+        map = ui.GetComponentInChildren<PPR_Map>();
+        map.Initialize();
 
         player.Initialize();
 
+        IsStarted = false;
+    }
+
+    public override void StartGame()
+    {
         ui.CountDown();
+        IsStarted = true;
     }
 
     public override void Pause()
     {
-        
+        base.Pause();
+
+        player.Pause();
+        map.Pause();
+
+        isRunning = false;
     }
 
     public override void Resume()
     {
+        player.Resume();
+        map.Resume();
 
+        isRunning = true;
+    }
+
+    void ResetGame()
+    {
+        Destroy(player.gameObject);
+        Destroy(ui.gameObject);
+
+        Initialize();
+
+        isRunning = false;
+        IsStarted = false;
     }
 
     public void StartRun()
     {
-        isInGame = true;
+        isRunning = true;
+    }
+
+    public void StopRun()
+    {
+        isRunning = false;
+    }
+
+    void UpdateTimeInterval()
+    {
+        timeInterval += Time.deltaTime;
     }
 
     bool isLastInputWasLeft = false;
     void TryRun()
     {
-        if (!isInGame)
-            return;
-
         if((Input.GetKeyDown(KeyCode.LeftArrow) && !isLastInputWasLeft)
             || (Input.GetKeyDown(KeyCode.RightArrow) && isLastInputWasLeft))
         {
             Run();
+
+            isLastInputWasLeft = !isLastInputWasLeft;
         }
     }
 
@@ -84,10 +125,7 @@ public class PPR : Game
 
         player.PlayRunClip();
 
-
         timeInterval = 0;
-
-        isLastInputWasLeft = !isLastInputWasLeft;
     }
 
     void UpdateClipSpeed()
@@ -97,11 +135,10 @@ public class PPR : Game
 
     void CheckPlayerArrive()
     {
-        print(map.transform.localPosition.x);
-
-        if(map.transform.localPosition.x < EndLine)
+        if(map.transform.localPosition.x < EndLine && isRunning)
         {
-            SwapGame();
+            ResetGame();
+            PlayNextScene();
         }
     }
 
